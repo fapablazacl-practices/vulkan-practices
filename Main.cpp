@@ -33,6 +33,45 @@ private:
     }
 
 
+    void pickPhysicalDevice() {
+        std::vector<VkPhysicalDevice> devices = this->enumeratePhysicalDevices();
+
+        if (devices.size() == 0) {
+            throw std::runtime_error("there is no GPUs with vulkan support on your system");
+        }
+
+        for (const VkPhysicalDevice &device : devices) {
+            if (this->isDeviceSuitable(device)) {
+                physicalDevice = device;
+                break;
+            }
+        }
+
+        if (physicalDevice == VK_NULL_HANDLE) {
+            throw std::runtime_error("failed to find a suitable GPU");
+        }
+    }
+
+
+    bool isDeviceSuitable(VkPhysicalDevice device) {
+        return true;
+    }
+
+    std::vector<VkPhysicalDevice> enumeratePhysicalDevices() const {
+        uint32_t count = 0;
+        vkEnumeratePhysicalDevices(instance, &count, nullptr);
+
+        if (count == 0) {
+            return {};
+        }
+
+        std::vector<VkPhysicalDevice> devices(count);
+        vkEnumeratePhysicalDevices(instance, &count, devices.data());
+
+        return devices;
+    }
+
+
     void createInstance() {
         if (enabledValidationLayers() && !checkValidationLayers()) {
             throw std::runtime_error("validation layers requested, but not available!");
@@ -139,6 +178,7 @@ private:
     const int Width = 800, Height = 600;
     GLFWwindow *window = nullptr;
     VkInstance instance = nullptr;
+    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
 
     std::vector<const char*> validationLayers {
         "VK_LAYER_KHRONOS_validation"
