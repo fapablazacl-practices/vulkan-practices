@@ -10,8 +10,9 @@ add_subdirectory("dep/glfw")
 # glm
 include_directories ("dep/glm")
 
+# project structure
 set (target poc-vulkan)
 set (sources Main.cpp)
 
 add_executable (${target} ${sources})
-target_link_libraries (${target} glfw)
+target_link_libraries (${target} glfw vulkan)
