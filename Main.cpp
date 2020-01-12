@@ -11,6 +11,16 @@
 #include <stdexcept>
 #include <vector>
 #include <cstring>
+#include <optional>
+
+struct QueueFamilyIndices {
+    std::optional<uint32_t> graphicsFamily;
+
+    bool isComplete() const {
+        return graphicsFamily.has_value();
+    }
+};
+
 
 class HelloTriangleApplication {
 public:
@@ -30,6 +40,9 @@ private:
         std::uint32_t extensionCount = 0;
         vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
         std::cout << extensionCount << " extensions supported" << std::endl;
+
+        createInstance();
+        pickPhysicalDevice();
     }
 
 
@@ -54,16 +67,53 @@ private:
 
 
     bool isDeviceSuitable(VkPhysicalDevice device) {
-        return true;
+        VkPhysicalDeviceProperties properties;
+        vkGetPhysicalDeviceProperties(device, &properties);
+
+        VkPhysicalDeviceFeatures features;
+        vkGetPhysicalDeviceFeatures(device, &features);
+
+        QueueFamilyIndices familyIndices = findQueueFamilies(device);
+
+        return  /*properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU 
+                && */features.geometryShader
+                && familyIndices.isComplete();
     }
+    
+
+    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) {
+        QueueFamilyIndices indices;
+
+        std::vector<VkQueueFamilyProperties> families = getFamilyProperties(device);
+
+        for (int i = 0; i<families.size(); i++) {
+            if (families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+                indices.graphicsFamily = i;
+            }
+
+            if (indices.isComplete()) {
+                break;
+            }
+        }
+        
+        return indices;
+    }
+
+
+    std::vector<VkQueueFamilyProperties> getFamilyProperties(VkPhysicalDevice device) {
+        uint32_t count = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &count, nullptr);
+
+        std::vector<VkQueueFamilyProperties> properties(count);
+        vkGetPhysicalDeviceQueueFamilyProperties(device, &count, properties.data());
+
+        return properties;
+    }
+
 
     std::vector<VkPhysicalDevice> enumeratePhysicalDevices() const {
         uint32_t count = 0;
         vkEnumeratePhysicalDevices(instance, &count, nullptr);
-
-        if (count == 0) {
-            return {};
-        }
 
         std::vector<VkPhysicalDevice> devices(count);
         vkEnumeratePhysicalDevices(instance, &count, devices.data());
