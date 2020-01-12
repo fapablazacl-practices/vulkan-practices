@@ -58,7 +58,12 @@ private:
         createInfo.ppEnabledExtensionNames = glfwExtensions;
 
         // validation layers
-        createInfo.enabledLayerCount = 0;
+        if (enabledValidationLayers()) {
+            createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+            createInfo.ppEnabledLayerNames = validationLayers.data();
+        } else {
+            createInfo.enabledLayerCount = 0;
+        }
 
         if (VkResult result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
             throw std::runtime_error("failed to create instance. error code: " + std::to_string(result));
