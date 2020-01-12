@@ -31,6 +31,35 @@ private:
     }
 
 
+    void createInstance() {
+        VkApplicationInfo appInfo = {};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName = "Hello Triangle";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "XE";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_0;
+
+        VkInstanceCreateInfo createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+
+        uint32_t glfwExtensionCount = 0;
+        const char **glfwExtensions = nullptr;
+
+        glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+        createInfo.enabledExtensionCount = glfwExtensionCount;
+        createInfo.ppEnabledExtensionNames = glfwExtensions;
+
+        // validation layers
+        createInfo.enabledLayerCount = 0;
+
+        if (VkResult result = vkCreateInstance(&createInfo, nullptr, &instance); result != VK_SUCCESS) {
+            throw std::runtime_error("failed to create instance. error code: " + std::to_string(result));
+        }
+    }
+
+
     void mainLoop() {
         while (!::glfwWindowShouldClose(window)) {
             glfwPollEvents();
@@ -39,8 +68,14 @@ private:
 
 
     void cleanup() {
+        if (instance) {
+            vkDestroyInstance(instance, nullptr);
+            instance = nullptr;
+        }
+
         if (window) {
             glfwDestroyWindow(window);
+            window = nullptr;
         }
 
         glfwTerminate();
@@ -48,8 +83,8 @@ private:
 
 private:
     const int Width = 800, Height = 600;
-
     GLFWwindow *window = nullptr;
+    VkInstance instance = nullptr;
 };
 
 

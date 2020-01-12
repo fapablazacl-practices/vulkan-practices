@@ -1,5 +1,9 @@
 
-project (poc-vulkan)
+project (vulkan-practices)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # GLFW
 set (GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -11,7 +15,7 @@ add_subdirectory("dep/glfw")
 include_directories ("dep/glm")
 
 # project structure
-set (target poc-vulkan)
+set (target vulkan01)
 set (sources Main.cpp)
 
 add_executable (${target} ${sources})
